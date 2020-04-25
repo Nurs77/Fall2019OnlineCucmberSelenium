@@ -1,7 +1,7 @@
 package com.vytrack.pages;
 
-import com.automation.tests.utilities.BrowserUtils;
-import com.automation.tests.utilities.Driver;
+import com.vytrack.utilities.BrowserUtilities;
+import com.vytrack.utilities.Driver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -14,20 +14,25 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public abstract class AbstractPageBase {
     protected WebDriver driver = Driver.getDriver();
-    protected WebDriverWait wait = new WebDriverWait(driver,25);
+    protected WebDriverWait wait = new WebDriverWait(driver, 25);
 
-    @FindBy(css = "#user-menu>a")
+    @FindBy(css = "#user-menu > a")
     protected WebElement currentUser;
 
-
-
+    @FindBy(css = "[class='btn-group pull-right'] > button")
+    protected WebElement saveAndClose;
 
     public AbstractPageBase() {
         PageFactory.initElements(driver, this);
     }
 
+    public void clickOnSaveAndClose() {
+        BrowserUtilities.wait(3);
+        wait.until(ExpectedConditions.elementToBeClickable(saveAndClose)).click();
+    }
+
     public String getCurrentUserName(){
-        BrowserUtils.waitForPageToLoad(10);
+        BrowserUtilities.waitForPageToLoad(10);
         wait.until(ExpectedConditions.visibilityOf(currentUser));
         return currentUser.getText().trim();
     }
@@ -47,7 +52,7 @@ public abstract class AbstractPageBase {
 
         Actions actions = new Actions(driver);
 
-        BrowserUtils.wait(4);
+        BrowserUtilities.wait(4);
 
         actions.moveToElement(tabElement).
                 pause(2000).
@@ -55,6 +60,15 @@ public abstract class AbstractPageBase {
                 build().perform();
 
         //increase this wait rime if still failing
-        BrowserUtils.wait(4);
+        BrowserUtilities.wait(4);
+
+        waitForLoaderMask();
+    }
+    /**
+     * this method can be used to wait until that terrible loader mask (spinning wheel) will be gone
+     * if loader mask is present, website is loading some data and you cannot perform any operations
+     */
+    public void waitForLoaderMask() {
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("[class*='loader-mask']")));
     }
 }
